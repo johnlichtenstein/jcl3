@@ -3,7 +3,7 @@ dialect = "redshift"
 exclude_rules = ["L031", "AL01"]
 ignore = "templating"
 comma_style = "leading"
-    
+
 [tool.sqlfluff.layout.type.comma]
 line_position = "leading"
 
@@ -11,10 +11,10 @@ line_position = "leading"
 indented_joins = false
 indented_using_on = true
 tab_space_size = 4
-    
+
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "lower"
-    
+
 [tool.sqlfluff.rules.layout.long_lines]
 max_line_length = 80
 
@@ -42,4 +42,3 @@ rev = "v0.1.2"
 
   [[repos.hooks]]
   id = "style-files"
-
