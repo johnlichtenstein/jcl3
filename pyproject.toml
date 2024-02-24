@@ -1,0 +1,45 @@
+[tool.sqlfluff.core]
+dialect = "redshift"
+exclude_rules = ["L031", "AL01"]
+ignore = "templating"
+comma_style = "leading"
+    
+[tool.sqlfluff.layout.type.comma]
+line_position = "leading"
+
+[tool.sqlfluff.indentation]
+indented_joins = false
+indented_using_on = true
+tab_space_size = 4
+    
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "lower"
+    
+[tool.sqlfluff.rules.layout.long_lines]
+max_line_length = 80
+
+[tool.sqlfluff.layout.type.alias_expression]
+# We want non-default spacing _before_ the alias expressions.
+spacing_before = "align"
+# We want to align them within the next outer select clause.
+# This means for example that alias expressions within the FROM
+# or JOIN clause would _not_ be aligned with them.
+align_within = "select_clause"
+# The point at which to stop searching outward for siblings, which
+# in this example would likely be the boundary of a CTE. Stopping
+# when we hit brackets is usually a good rule of thumb for this
+# configuration.
+align_scope = "bracketed"
+
+[tool.black]
+line-length = 80
+target-version = ['py310']
+include = '\.pyi?$'
+
+[[repos]]
+repo = "https://github.com/lorenzwalthert/precommit"
+rev = "v0.1.2"
+
+  [[repos.hooks]]
+  id = "style-files"
+
