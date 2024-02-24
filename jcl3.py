@@ -32,8 +32,7 @@ class Hopper(object):
         return None
 
 class Archive(object):
-    def __init__(self, arname, objSet, hopperSize=8, workers=8, verbose=False \
-            , artype='tar', compress=False, compressLevel=9):
+    def __init__(self, arname, objSet, hopperSize=8, workers=8, verbose=False, artype='tar', compress=False, compressLevel=9):
         self.arname = arname
         self.hopper = Hopper(objSet, hopperSize)
         self.workers = workers
@@ -42,5 +41,7 @@ class Archive(object):
         self.verbose = verbose
         self.compressLevel = compressLevel
         if self.format == 'tar':
-            self.archive = TarFile(self.arname, mode='w:gz', format=tarfile.GNU_FORMAT)
-        
+            if self.compress:
+                self.archive = TarFile(self.arname, mode='w:gz', format=tarfile.GNU_FORMAT)
+            else:
+                self.archive = TarFile(self.arname, mode='w', format=tarfile.GNU_FORMAT)
