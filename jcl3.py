@@ -18,12 +18,14 @@ class Hopper(object):
         self.hopper = str(uuid.uuid4())
         os.mkdir(self.hopper)
         self.fs = s3fs.S3FileSystem()
+        self.alreayFetched = set()  # I didn't think I need this
 
     def fetch(self, obj):
         if len(self.hopperSet) < self.hopperSize:
             key = obj.split("/")[-1]
             self.fs.get(obj, self.hopper + "/" + key)
             self.hopperSet.add(obj)
+            self.alreayFetched.add(obj)
             return None
         else:
             return None
@@ -55,6 +57,8 @@ class Archive(object):
         self.verbose = verbose
         self.compressLevel = compressLevel
         self.done = False
+        self.alreadyAdded = set()  # I didn't think I need this
+        self.addCallCount = 0  # delete when done debugging
         if self.artype == "tar":
             if self.compress:
                 self.archive = TarFile(
@@ -67,8 +71,10 @@ class Archive(object):
 
     def fetchOne(self):
         if len(self.hopper.hopperSet) < self.hopper.hopperSize:
-            obj = self.hopper.toFetch.pop()
-            self.hopper.fetch(obj)
+            if len(self.hopper.toFetch) > 0:
+                obj = self.hopper.toFetch.pop()
+                self.hopper.alreayFetched.add(obj)
+                self.hopper.fetch(obj)
             return None
 
     def add(self):
@@ -76,17 +82,23 @@ class Archive(object):
             item = self.hopper.hopperSet.pop()
         except KeyError:
             return None
-        key = item.split("/")[-1]
+        self.addCallCount += 1
+        key = item.split("/")[-1].strip()
+        if key == "":
+            return None
+        # print ("adding %s already added %s" %(key, key in self.alreadyAdded))
+        # self.alreadyAdded.add(key)
+        tfn = "%s/%s" % (self.hopper.hopper, key)
         if self.artype == "tar":
-            self.archive.add(self.hopper.hopper + "/" + key, arcname=key)
+            self.archive.add(tfn, arcname=key)
+        try:
+            os.remove(tfn)
+        except:
+            print(f"failing to remove {tfn}")
         return None
 
     def doMore(self):
         for j in range(len(self.hopper.hopperSet), self.hopper.hopperSize):
-            # try:
-            #     self.fetchOne()
-            # except:
-            #     pass
             self.fetchOne()
         self.add()
         if len(self.hopper.hopperSet) == 0:
@@ -136,19 +148,9 @@ s3://datadeloro-regab/state/extract/0000929638-18-000485_1716665_33026_61.parque
         "\n"
     )
     archive = Archive("examples.tar", set(testL))
-    print(dt.now().strftime("%H:%M:%S"), len(archive.hopper.toFetch))
-    obj = testL.pop(0)
-    key = obj.split("/")[-1]
-
-    # help(archive.hopper.fs.get())
-    # archive.hopper.fs.get(obj, archive.hopper.hopper + "/" + key)
-    # domoreCount = 0
-    # while not archive.done:
-    #     archive.doMore()
-    #     domoreCount += 1
-    #     print(dt.now().strftime("%H:%M:%S"), domoreCount
-    #           , len(archive.hopper.hopperSet), archive.hopper.hopperSize)
-    #     time.sleep(1)
+    domoreCount = 0
+    while not archive.done:
+        archive.doMore()
 
     archive.close()
     print("done")
