@@ -65,3 +65,6 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/johnlichtenstein/jcl3"
 Issues = "https://github.com/johnlichtenstein/jcl3/issues"
+
+[project.scripts]
+s3tar = "jcl3_DelOro.s3tar:main"
